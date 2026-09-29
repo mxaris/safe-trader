@@ -1,0 +1,25 @@
+services:
+  safe-trader:
+    build: .
+    image: safe-trader:latest
+    container_name: safe-trader
+    restart: unless-stopped
+    # Paper trading by default. For live trading set `mode: live` in config.yaml
+    # AND uncomment the line below; both are required.
+    # command: ["run", "-c", "/app/config.yaml", "--live"]
+    env_file:
+      - path: .env          # SAFE_TRADER_API_KEY / SAFE_TRADER_API_SECRET (live mode only)
+        required: false
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+      - safe-trader-state:/app/state   # position, risk state, trade journal
+      - ./data:/app/data               # CSVs for fetch/backtest
+    stop_grace_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+volumes:
+  safe-trader-state:

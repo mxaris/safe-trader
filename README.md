@@ -48,6 +48,43 @@ safe-trader status
 safe-trader reset-halt
 ```
 
+## Running with Docker
+
+The image runs the bot as a non-root user and shuts down cleanly on `docker stop` (state is saved; an open position is resumed on the next start). Your `config.yaml` is mounted at runtime and never baked into the image. Credentials come from `.env`.
+
+```bash
+cp config.example.yaml config.yaml     # edit it
+cp .env.example .env                   # only needed for live mode
+
+docker compose up -d --build           # paper trading, restarts automatically
+docker compose logs -f                 # follow trades and errors
+docker compose run --rm safe-trader status
+docker compose run --rm safe-trader reset-halt
+docker compose down                    # stop (state volume is kept)
+```
+
+Backtests and data downloads use `./data`:
+
+```bash
+docker compose run --rm safe-trader fetch --days 730 -o /app/data/btc_1h.csv
+docker compose run --rm safe-trader backtest --csv /app/data/btc_1h.csv
+```
+
+The container runs as UID 10001. On Linux, if `fetch` can't write to `./data`, run `sudo chown 10001 data` once.
+
+For **live trading** with Docker, set `mode: live` in `config.yaml` **and** uncomment the `command: [... "--live"]` line in `docker-compose.yml`.
+
+Bot state (position, risk state, `trades.csv`) lives in the `safe-trader-state` named volume. The container reports **unhealthy** if the bot hasn't saved state successfully for 15 minutes, for example when the exchange stays unreachable. That check assumes `poll_seconds` is well under 15 minutes.
+
+Without Compose:
+
+```bash
+docker build -t safe-trader .
+docker run -d --name safe-trader --restart unless-stopped \
+  -v "$PWD/config.yaml:/app/config.yaml:ro" -v safe-trader-state:/app/state \
+  --env-file .env safe-trader
+```
+
 ## Going live
 
 Live trading needs **all** of the following, so it can't happen by accident:
@@ -65,7 +102,7 @@ Recommendations:
 - Create API keys with **trade permission only** and never enable withdrawals. Restrict them by IP if the exchange allows it.
 - Start with `exchange.sandbox: true` on an exchange that has a testnet (e.g. Binance, Bybit).
 - Use a dedicated sub-account that holds only the funds the bot may trade.
-- Run under a process supervisor (systemd, Docker `restart: unless-stopped`) and watch the logs.
+- Run under a process supervisor (the provided Docker Compose setup or systemd) and watch the logs.
 
 ## How it works
 
