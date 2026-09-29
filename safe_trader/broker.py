@@ -75,6 +75,11 @@ def make_exchange(config: ExchangeConfig, credentials: Credentials | None = None
             params["password"] = credentials.password
     exchange = cls(params)
     if config.sandbox:
+        if not exchange.urls.get("test"):
+            raise ValueError(
+                f"{config.id} has no sandbox/testnet; set exchange.sandbox: false "
+                "(use mode: paper to trade with simulated money instead)"
+            )
         exchange.set_sandbox_mode(True)
     return exchange
 

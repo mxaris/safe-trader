@@ -5,7 +5,7 @@ import signal
 import time
 
 from safe_trader.broker import Broker, LiveBroker, PaperBroker, make_exchange, split_symbol
-from safe_trader.config import Config, load_credentials
+from safe_trader.config import Config, ExchangeConfig, load_credentials
 from safe_trader.data import closed_candles, timeframe_ms, to_candles
 from safe_trader.engine import TradingEngine
 from safe_trader.risk import RiskManager
@@ -93,7 +93,8 @@ def build_runner(config: Config) -> Runner:
         broker = LiveBroker(exchange)
         position = _reconcile(broker, config.symbol, position)
     else:
-        exchange = make_exchange(config.exchange)  # public data only
+        # Paper mode needs only public prices; use the real market, not a testnet.
+        exchange = make_exchange(ExchangeConfig(id=config.exchange.id, sandbox=False))
         balances = saved.get("paper_balances")
         broker = PaperBroker(config.paper, *balances) if balances else PaperBroker(config.paper)
 

@@ -2,7 +2,7 @@
 
 exchange:
   id: binance          # any ccxt exchange id: binance, kraken, coinbase, okx, bybit, ...
-  sandbox: true        # use the exchange testnet when it has one
+  sandbox: true        # use the exchange testnet (live mode only). Coinbase has none: set false
 
 symbol: BTC/USDT
 timeframe: 1h
@@ -12,7 +12,7 @@ state_dir: ./state     # position state + trade journal
 
 paper:
   starting_cash: 1000
-  fee_rate: 0.001      # 0.1% per fill
+  fee_rate: 0.001      # 0.1% per fill. Set to your real taker fee (Coinbase: up to 0.012)
   slippage: 0.0005     # 0.05% adverse price move per fill
 
 strategy:

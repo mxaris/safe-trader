@@ -104,6 +104,27 @@ Recommendations:
 - Use a dedicated sub-account that holds only the funds the bot may trade.
 - Run under a process supervisor (the provided Docker Compose setup or systemd) and watch the logs.
 
+### Coinbase
+
+Backtesting and paper trading need **no API key**: they only read public prices. You need a key only for live trading.
+
+1. Set up the config:
+   ```yaml
+   exchange:
+     id: coinbase
+     sandbox: false        # Coinbase has no testnet
+   symbol: BTC/USD         # or BTC/USDC, BTC/EUR, ETH/USD ...
+   paper:
+     fee_rate: 0.006       # use your real taker fee tier; small accounts pay up to 1.2%
+   ```
+2. Paper trade for a while: `safe-trader run`.
+3. For live trading, create a key in the [Coinbase Developer Platform](https://portal.cdp.coinbase.com/) (API keys → Secret API Keys → Create):
+   - Permissions: **View** and **Trade** only. Never enable **Transfer**.
+   - Under advanced settings choose the **ECDSA** signature algorithm, and add an IP allowlist if your server has a fixed IP.
+   - Put the key **name** (`organizations/.../apiKeys/...`) in `SAFE_TRADER_API_KEY`. Put the **private key** in `SAFE_TRADER_API_SECRET`, on one line with `\n` for the line breaks (see `.env.example`).
+
+Fees matter on Coinbase. The bot places market orders, so it pays the taker fee on every entry and exit. At the lowest tiers that's roughly 1–2.4% per round trip, which can wipe out a strategy's edge. Always backtest with your real `fee_rate`.
+
 ## How it works
 
 ```

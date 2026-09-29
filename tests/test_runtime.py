@@ -94,3 +94,23 @@ def test_cli_backtest_csv(tmp_path, capsys):
                  "--trades-out", str(trades)]) == 0
     assert "Final equity" in capsys.readouterr().out
     assert trades.exists()
+
+
+def test_sandbox_unsupported_gives_clear_error():
+    from safe_trader.broker import make_exchange
+    from safe_trader.config import ExchangeConfig
+
+    with pytest.raises(ValueError, match="no sandbox"):
+        make_exchange(ExchangeConfig(id="coinbase", sandbox=True))
+    make_exchange(ExchangeConfig(id="coinbase", sandbox=False))
+
+
+def test_credentials_unescape_pem_newlines(monkeypatch):
+    from safe_trader.config import load_credentials
+
+    monkeypatch.setenv("SAFE_TRADER_API_KEY", "organizations/o/apiKeys/k")
+    monkeypatch.setenv("SAFE_TRADER_API_SECRET",
+                       "-----BEGIN EC PRIVATE KEY-----\\nABC\\n-----END EC PRIVATE KEY-----\\n")
+    creds = load_credentials()
+    assert creds.secret.splitlines() == [
+        "-----BEGIN EC PRIVATE KEY-----", "ABC", "-----END EC PRIVATE KEY-----"]

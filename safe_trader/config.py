@@ -129,5 +129,8 @@ def load_credentials() -> Credentials:
         raise RuntimeError(
             "live mode needs SAFE_TRADER_API_KEY and SAFE_TRADER_API_SECRET in the environment"
         )
+    # Multi-line secrets (e.g. Coinbase's PEM private key) can be written on one
+    # line in .env files with literal "\n" sequences.
+    secret = secret.replace("\\n", "\n")
     password = os.environ.get("SAFE_TRADER_API_PASSWORD", "").strip() or None
     return Credentials(key, secret, password)
