@@ -1,0 +1,32 @@
+# Copy to config.yaml and adjust. config.yaml is git-ignored.
+
+exchange:
+  id: binance          # any ccxt exchange id: binance, kraken, coinbase, okx, bybit, ...
+  sandbox: true        # use the exchange testnet when it has one
+
+symbol: BTC/USDT
+timeframe: 1h
+mode: paper            # paper | live  (live also needs --live on the command line)
+poll_seconds: 30       # how often the runner checks prices
+state_dir: ./state     # position state + trade journal
+
+paper:
+  starting_cash: 1000
+  fee_rate: 0.001      # 0.1% per fill
+  slippage: 0.0005     # 0.05% adverse price move per fill
+
+strategy:
+  name: sma_cross      # sma_cross | rsi_reversion
+  params:
+    fast: 20
+    slow: 50
+
+risk:
+  risk_per_trade: 0.01       # lose at most 1% of equity if the stop is hit
+  max_position_pct: 0.25     # never put more than 25% of equity in one position
+  stop_loss_pct: 0.03        # stop 3% below entry
+  take_profit_pct: 0.06      # take profit 6% above entry (0 disables)
+  trailing_stop_pct: 0.0     # trail the stop this far below the highest high (0 disables)
+  max_daily_loss_pct: 0.05   # stop opening trades for the rest of the UTC day after -5%
+  max_drawdown_pct: 0.20     # kill switch: flatten and halt after -20% from peak equity
+  min_order_value: 10        # skip orders smaller than this (quote currency)

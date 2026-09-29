@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "safe-trader"
+version = "0.1.0"
+description = "Risk-first automated crypto trading bot (spot, long-only) with backtesting and paper trading."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "ccxt>=4.0",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[project.scripts]
+safe-trader = "safe_trader.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["safe_trader*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
